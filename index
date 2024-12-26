@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para que no me olvides</title>
+    <style>
+        body {
+            background-color: #FFC0CB;
+            background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100" fill="%23FF69B4" opacity="0.5"%3E%3Ccircle cx="50" cy="50" r="10"/%3E%3C/svg%3E');
+            background-repeat: repeat;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: #333;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 2rem;
+            color: #D02090;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .buttons button {
+            background-color: #FF69B4;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            color: white;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .buttons button:hover {
+            background-color: #FF1493;
+        }
+
+        #compass {
+            margin-top: 40px;
+            width: 200px;
+            height: 200px;
+            position: relative;
+            background: linear-gradient(135deg, #FF69B4, #FFC0CB);
+            clip-path: path('M100,10 Q140,50 100,90 Q60,50 100,10 Z'); /* Heart shape */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .needle {
+            width: 4px;
+            height: 90px;
+            background-color: #D02090;
+            position: absolute;
+            transform-origin: bottom center;
+            transform: rotate(0deg);
+        }
+
+        .needle::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 12px solid #D02090;
+            position: absolute;
+            top: -10px;
+            left: -4px;
+        }
+
+        .center {
+            width: 10px;
+            height: 10px;
+            background-color: #FF1493;
+            border-radius: 50%;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <h1>Para que no me olvides</h1>
+
+    <div class="buttons">
+        <button onclick="setTarget('21.1619,-86.8515')">Para que siempre me encuentres</button>
+        <button onclick="setTarget('28.6139,77.2090')">Nuestras primeras vacaciones</button>
+        <button onclick="setTarget('-15.8267,-47.9218')">Conociendo Brasil</button>
+    </div>
+
+    <div id="compass">
+        <div class="needle" id="needle"></div>
+        <div class="center"></div>
+    </div>
+
+    <script>
+        let targetCoords = null;
+
+        function setTarget(coords) {
+            targetCoords = coords.split(',').map(Number);
+            console.log(`Target set to: ${targetCoords}`);
+        }
+
+        function updateCompass(position) {
+            if (!targetCoords) return;
+
+            const { latitude, longitude } = position.coords;
+
+            // Calculate the angle between the current position and target position
+            const deltaLat = targetCoords[0] - latitude;
+            const deltaLon = targetCoords[1] - longitude;
+            let angle = Math.atan2(deltaLon, deltaLat) * (180 / Math.PI);
+
+            // Adjust angle to compass orientation
+            angle = (angle + 360) % 360;
+
+            const needle = document.getElementById('needle');
+            needle.style.transform = `rotate(${angle}deg)`;
+        }
+
+        function requestLocation() {
+            if (!navigator.geolocation) {
+                alert('Geolocalización no es soportada por tu navegador.');
+                return;
+            }
+
+            navigator.geolocation.watchPosition(
+                position => {
+                    console.log('Posición actualizada:', position);
+                    updateCompass(position);
+                },
+                error => {
+                    console.error('Error obteniendo la ubicación:', error);
+                    alert(`No se pudo obtener tu ubicación: ${error.message}`);
+                },
+                {
+                    enableHighAccuracy: false, // Reduce la exigencia del GPS
+                    timeout: 10000, // Espera hasta 10 segundos
+                    maximumAge: 0 // Evita datos en caché
+                }
+            );
+        }
+
+        // Request location when the page loads
+        document.addEventListener('DOMContentLoaded', requestLocation);
+    </script>
+</body>
+</html>
